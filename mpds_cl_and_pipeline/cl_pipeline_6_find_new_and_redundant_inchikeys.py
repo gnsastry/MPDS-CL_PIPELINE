@@ -7,6 +7,7 @@ import tempfile
 import functools
 import concurrent.futures
 import multiprocessing as mp
+from find_chemical_data import is_InChIKey
 
 def time_it(func):
     @functools.wraps(func)
@@ -33,12 +34,25 @@ def input_file_generator(filepath):
 def load_file_to_set(filepath):
     local_set = set()
     try:
+        # added automatic inchikey detection
+        inchikey_idx = -1
         with open(filepath, 'r',encoding = 'utf-8') as f:
             for line in f:
                 items = line.strip().split('\t')
-                if len(items) > 3:
-                    inchikey = items[3]
+                for idx, item in enumerate(items):
+                    if is_InChIKey(item[idx]):
+                        inchikey_idx = idx
+                        break
+                break
+        if inchikey_idx != -1:
+            with open(filepath, 'r',encoding = 'utf-8') as f:
+                for line in f:
+                    items = line.strip().split('\t')
+                    inchikey = items[inchikey_idx]
                     local_set.add(inchikey)
+        else:
+            print('------ No InChIKey Found in Reference File ------')
+
     except Exception as e:
         print(f"Error reading reference file {filepath}: {e}")
     return local_set
