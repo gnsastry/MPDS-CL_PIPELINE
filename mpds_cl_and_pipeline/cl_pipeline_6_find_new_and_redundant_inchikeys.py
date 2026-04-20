@@ -7,7 +7,7 @@ import tempfile
 import functools
 import concurrent.futures
 import multiprocessing as mp
-from find_chemical_data import is_InChIKey
+from .find_chemical_data import is_InChIKey
 
 def time_it(func):
     @functools.wraps(func)
