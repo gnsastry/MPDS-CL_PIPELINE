@@ -1,6 +1,6 @@
 # MPDS Compound Library Pipeline
 
-This pipeline processes chemical databases to generate a curated compound library using cheminformatics and machine learning techniques.
+This pipeline processes chemical databases to generate a curated compound library using cheminformatics library.
 
 ---
 
