@@ -11,7 +11,7 @@ from mpds_cl_and_pipeline.cl_pipeline_9_generate_cluster_files import generate_c
 
 
 # ---------------------------------------------------------- Phase 1 to 5 ---------------------------------------------------------- #
-databases_dir = '/home/acdsd3/Desktop/2025 March Compound Library Databases/Downloaded Databases'
+databases_dir = '/path/to/Downloaded Databases Directory'
 merged_databases_file_path = 'Merged_databases.txt'
 
 # extracted_databases_dir = 'Extracted_Databases_dir'
@@ -28,7 +28,7 @@ mapped_inchikey_id_smiles_file_path = run_phase_1_to_5(
 ### Phase 6
 num_workers = max(1,int(mp.cpu_count()/2))  # Set the number of workers
 
-ref_dir = '/home/acdsd3/Desktop/2025 March Compound Library Databases/2024 CL/CSV_VERSION' # path_to_compound_library_csv_version
+ref_dir = '/path/to/existing/compounds_with_inchikey' # path_to_compound_library_csv_version
 new_output_file = 'new_inchikey_file.txt' # sys.argv[3]
 redundant_output_file = 'redundant_inchikey_file.txt' # sys.argv[4]
 
