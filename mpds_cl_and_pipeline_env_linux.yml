@@ -57,6 +57,7 @@ dependencies:
   - libxcb=1.13=h7f98852_1004
   - libxml2=2.10.3=h7463322_0
   - libzlib=1.2.13=h166bdaf_4
+  - lxml
   - matplotlib-base=3.6.2=py310h8d5ebf3_0
   - ncurses=6.3=h27087fc_1
   - openbabel=3.1.1=py310heaf86c6_5
