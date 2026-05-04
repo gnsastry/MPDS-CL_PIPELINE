@@ -1,7 +1,6 @@
 import os
 import re
 import pandas as pd
-from rdkit import Chem
 
 ## 6.1 Gets Fields or Columns Present in SDF
 def fetch_sdf_fields(filepath):
@@ -31,69 +30,63 @@ def fetch_sdf_fields(filepath):
 ## 6.2 Converts SDF to TXT
 
 def parse_sdf_with_fields(input_sdf_file, fields, output_dir):
-    """
-    Parses an SDF file and extracts all fields (tags and values) for each molecule.
-    Also keeps track of all unique fields encountered.
-    Args:
-        input_sdf_file (str): Path to the SDF file.
-    """
-    
-    sdf_filename_ext = os.path.basename( input_sdf_file )
-    filename = sdf_filename_ext.split('.')[0]
-    
-    output_filename = f'parsed_{filename}.txt'
-    output_path = os.path.join(output_dir, output_filename)
-    
-    with open( input_sdf_file, 'r',encoding='utf-8') as file:
-        molecule = {}
-        in_data_field = False
-        field_name = None
-        idx = 0
+
+    pattern = re.compile(r"^>\s*<([^>]+)>")
+
+    filename = os.path.splitext(os.path.basename(input_sdf_file))[0]
+    output_path = os.path.join(output_dir, f'parsed_{filename}.txt')
+
+    rows = []
+    molecule = {}
+    field_name = None
+
+    with open(input_sdf_file, 'r', encoding='utf-8') as file:
         for line in file:
             line = line.rstrip()
 
-            # Start of a new molecule
             if line == "$$$$":
                 if molecule:
-                    # print(f'Fetched :{idx} compounds',end='\r')
-                    for key, value in molecule.items():
-                        molecule[key] = ' '.join(value.split())
-                        
-                    if idx == 0:
-                        df = pd.DataFrame(columns = fields)
-                        df.loc[0] = molecule
-                        df.to_csv(output_path, sep='\t',index=False)
-                    else:
-                        df = pd.DataFrame(columns = fields)
-                        df.loc[0] = molecule
-                        df.to_csv(output_path, sep='\t', index = False,header=False, mode='a')
-                    idx += 1
-                    molecule = {}
-                    
-                in_data_field = False
+                    # Normalize whitespace
+                    for key in molecule:
+                        # molecule[key] = ' '.join(molecule[key].split())
+                        molecule[key] = ' '.join(molecule[key])
+                        molecule[key] = ' '.join(molecule[key].split())
+
+                    rows.append(molecule)
+
+                molecule = {}
                 field_name = None
                 continue
 
-            # Start of a data field
-            # ------------------------------------------------------------------------------------------------------------ #
-            # if line.startswith("> <"):
-                #field_name = line[3:-1]  # Extract field name
-                #molecule[field_name] = ""  # Initialize field with empty value
-                #in_data_field = True
-                #continue
-            # ------------------------------------------------------------------------------------------------------------ #
-            
-            if re.match(r"^>\s*<", line):
-                field_name = line[line.find('<') + 1:-1]
-                molecule[field_name] = ""  # Initialize field with empty value
-                in_data_field = True
+            match = pattern.match(line)
+            if match:
+                field_name = match.group(1)
+                molecule[field_name] = []
                 continue
 
-            # Read data for the current field
-            if in_data_field:
-                if field_name:
-                    molecule[field_name] += line + "\n"  # Append data to the field
-                continue
+            if field_name:
+                if line == "":  # End of field
+                    field_name = None
+                else:
+                    molecule[field_name].append(line)
+
+    # Handle last molecule if no $$$$
+    if molecule:
+        for key in molecule:
+            molecule[key] = ' '.join(molecule[key]).strip()
+        rows.append(molecule)
+
+    # Convert to DataFrame once
+    df = pd.DataFrame(rows)
+
+    # Ensure all expected fields exist
+    for col in fields:
+        if col not in df.columns:
+            df[col] = None
+
+    df = df[fields]  # reorder columns
+
+    df.to_csv(output_path, sep='\t', index=False)
 
 def convert_sdf_to_txt(input_sdf_file,output_dir):
     fields = fetch_sdf_fields(input_sdf_file)
