@@ -5,37 +5,27 @@ from rdkit import Chem
 
 ## 6.1 Gets Fields or Columns Present in SDF
 def fetch_sdf_fields(filepath):
-    # fields
-    unique_fields = set()  # To store all unique fields
+    unique_fields = set()
     
-    with open(filepath, 'r',encoding='utf-8') as file:
-        in_data_field = False
-        field_name = None
+    pattern = re.compile(r"^>\s*<([^>]+)>")
 
-        for i,line in enumerate(file):
-            line = line.rstrip()
+    with open(filepath, 'r', encoding='utf-8') as file:
+        for line in file:
+            line = line.strip()
 
-            # Start of a new molecule
             if line == "$$$$":
-                in_data_field = False
-                field_name = None
-                continue
-            # ------------------------------------------------------------------------------------------------------------ # 
-            # Start of a data field
-            #if line.startswith("> <"):
-                #field_name = line[3:-1]  # Extract field name
-                #unique_fields.add(field_name)  # Add the field to the set of unique fields
-                #in_data_field = True
-                #continue
-            # ------------------------------------------------------------------------------------------------------------ #
-            if re.match(r"^>\s*<", line):  # Match '>' followed by any number of spaces and then '<'
-                field_name = line[line.find('<') + 1:-1]  # Extract field name
-                unique_fields.add(field_name)  # Add the field to the set of unique fields
-                in_data_field = True
                 continue
 
-    unique_fields = list({ ' '.join(field.strip().split()) for field in unique_fields })
-    unique_fields.sort()
+            match = pattern.match(line)
+            if match:
+                field_name = match.group(1)
+                unique_fields.add(field_name)
+
+    # Normalize whitespace and sort
+    unique_fields = sorted(
+        {' '.join(field.strip().split()) for field in unique_fields}
+    )
+
     return unique_fields
 
 ## 6.2 Converts SDF to TXT
