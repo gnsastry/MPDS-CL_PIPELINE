@@ -40,7 +40,7 @@ def load_file_to_set(filepath):
             for line in f:
                 items = line.strip().split('\t')
                 for idx, item in enumerate(items):
-                    if is_InChIKey(item[idx]):
+                    if is_InChIKey(items[idx]):
                         inchikey_idx = idx
                         break
                 break
